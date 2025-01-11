@@ -3,6 +3,10 @@ const app = express()
 const cors = require('cors')
 const {initializeDatabase} = require('./db/db.connection')
 const User = require("./models/user.model")
+const Tasks = require("./models/tasks.model")
+const Tag = require("./models/tag.model")
+const Team = require("./models/team.model")
+const Project = require("./models/project.model")
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { authUser } = require('./middlewares/auth.middleware')
@@ -24,7 +28,7 @@ app.post("/auth/login", async(req,res)=>{
             if(!user){
                 return res.status(401).json({message:"Invalid email or password"})
             }
-             const isMatch = await bcrypt.compare(password,user.password)
+             const isMatch = bcrypt.compare(password,user.password)
     
             if(!isMatch){
                 return res.status(401).json({message:"Invalid email or password"})
@@ -60,10 +64,8 @@ app.get("/auth/api/data",authUser,(req,res)=>{
     res.json({message:"Protected route accessible"})
 })
 app.get("/auth/me",authUser,async(req,res)=>{
-    
-    try{
+     try{
         const finded = await User.findById( req.user.userId)
-        console.log(finded)
         if(!finded){
             res.status(402).json({message:"Invalid"})
         }
@@ -73,4 +75,124 @@ app.get("/auth/me",authUser,async(req,res)=>{
         res.status(500).json({message:"Internal server error",error})
     }
 })
+app.post("/tasks",async(req,res)=>{
+    console.log(req.body)
+    try{
+        const task = new Tasks(req.body)
+        await task.save()
+        res.status(201).json(task)
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message:"Internal server error"})
+    }
+})
+app.get("/tasks",async(req,res)=>{
+    try{
+    const { team, owner, tags, project, status } = req.query;
+
+    let filter = {};
+
+    if (team) filter.team = team;
+    if (owner) filter.owner = owner;
+    if (tags) filter.tags = { $in: tags.split(",") }; 
+    if (project) filter.project = project;
+    if (status) filter.status = status;
+
+   
+    const tasks = await Tasks.find(filter);
+console.log(tasks)
+    if (!tasks.length) {
+      return res.status(400).json({ message: "No tasks found with the given filters" });
+    }
+    res.status(200).json(tasks);
+    }catch(error){
+            res.status(500).json({message:"Internal Server Error"})
+        }
+    
+})
+app.post("/tasks/:id",async(req,res)=>{
+    const taskId = req.params.id
+    const updateTask = req.body
+    try{
+        const task = await Tasks.findByIdAndUpdate(taskId,updateTask,{new:true})
+        if(!task){
+            return res.status(404).json({error:"Task not found"})
+        }
+        res.status(202).json(task)
+
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+app.delete("/tasks/:id",async(req,res)=>{
+    const taskId = req.params.id
+    try{
+        const task = await Tasks.findByIdAndDelete(taskId)
+        if(!task){
+            return res.status(404).json({error:"Task not found"})
+        }
+        res.status(201).json({message:"Task deleted successfully", task})
+
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+
+app.get("/tags",async(req,res)=>{
+    try{
+        const tag = await Tag.find()
+        res.status(202).json(tag)
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+app.post("/tags",async(req,res)=>{
+    const {name } = req.body
+    try{
+        const tag= new Tag({name})
+        await tag.save()
+        res.status(201).json(tag)
+    }catch(error){
+        res.status(500).json({message:"Internal server error"})
+    }
+})
+app.get("/teams",async(req,res)=>{
+    try{
+        const team = await Team.find()
+        res.status(202).json(team)
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+app.post("/teams",async(req,res)=>{
+    try{
+        const team = new Team(req.body)
+        await team.save()
+        res.status(201).json(team)
+    }catch(error){
+        res.status(500).json({message:"Internal server error"})
+    }
+})
+app.post("/projects",async(req,res)=>{
+    try{
+        const project = new Project(req.body)
+        await project.save()
+        res.status(201).json(project)
+    }catch(error){
+        res.status(500).json({message:"Internal Server Error"})
+    }
+})
+app.get("/projects",async(req,res)=>{
+    try{
+        const project = await Project.find()
+        if(!project){
+            return res.status(404).json({error:"Project not available"})
+        }
+        res.status(202).json(project)
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+
+
 app.listen(3000, ()=>console.log('Server is running on 3000'))
