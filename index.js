@@ -42,7 +42,7 @@ app.post("/auth/login", async(req,res)=>{
    
 })
 app.post("/auth/signup",async(req,res)=>{
-    const {name,email,password} = req.body
+    const {firstname,lastname,email,password} = req.body
     try{
         const existingUser = await User.findOne({email})
         if(existingUser){
@@ -50,7 +50,7 @@ app.post("/auth/signup",async(req,res)=>{
         }
         const hashedPassword = await bcrypt.hash(password,10)
         const user = new User({
-            name,email,password:hashedPassword
+            firstname,lastname,email,password:hashedPassword
         })
         await user.save()
         res.status(201).json(user)
