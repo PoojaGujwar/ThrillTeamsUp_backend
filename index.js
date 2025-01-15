@@ -100,7 +100,6 @@ app.get("/tasks",async(req,res)=>{
 
    
     const tasks = await Tasks.find(filter);
-console.log(tasks)
     if (!tasks.length) {
       return res.status(400).json({ message: "No tasks found with the given filters" });
     }
