@@ -7,5 +7,4 @@ const tagSchema = new mongoose.Schema({
          unique: true
     }
 })
-const Tag = mongoose.model('Tag',tagSchema)
-module.exports = Tag;
+module.exports = mongoose.model('Tag',tagSchema)

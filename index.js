@@ -26,15 +26,15 @@ app.post("/auth/login", async(req,res)=>{
         try{
             const user = await User.findOne({email})
             if(!user){
-                return res.status(401).json({message:"Invalid email or password"})
+                return res.status(404).json({error:"Invalid email or password"})
             }
-             const isMatch = bcrypt.compare(password,user.password)
+             const isMatch = await bcrypt.compare(password,user.password)
     
             if(!isMatch){
-                return res.status(401).json({message:"Invalid email or password"})
+                return res.status(404).json({error:"Invalid email or password"})
             }
             const token = jwt.sign({userId:user._id.toString(),role:"admin"},process.env.JWT_SECRET,{expiresIn:"24h"})
-            console.log(token)
+
             res.json({token})
         }catch(error){
             res.status(500).json({message:"Internal Server Error"})
@@ -46,7 +46,7 @@ app.post("/auth/signup",async(req,res)=>{
     try{
         const existingUser = await User.findOne({email})
         if(existingUser){
-            return res.status(400).json({message:"User already exists"})
+            return res.status(404).json({error:"User already exists"})
         }
         const hashedPassword = await bcrypt.hash(password,10)
         const user = new User({
@@ -67,7 +67,7 @@ app.get("/auth/me",authUser,async(req,res)=>{
      try{
         const finded = await User.findById( req.user.userId)
         if(!finded){
-            res.status(402).json({message:"Invalid"})
+            res.status(404).json({error:"User not found"})
         }
         const {name, email} = finded
         res.json({name,email})
@@ -101,7 +101,7 @@ app.get("/tasks",async(req,res)=>{
    
     const tasks = await Tasks.find(filter);
     if (!tasks.length) {
-      return res.status(400).json({ message: "No tasks found with the given filters" });
+      return res.status(404).json({ error: "No tasks found with the given filters" });
     }
     res.status(200).json(tasks);
     }catch(error){
