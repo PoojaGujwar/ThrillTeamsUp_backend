@@ -78,7 +78,7 @@ app.get("/auth/me",authUser,async(req,res)=>{
 app.get("/users",async(req,res)=>{
     try{
         const user = await User.find()
-        res.status(200).json({user})
+        res.status(200).json(user)
     }catch(error){
         res.status(500).json({error:"Internal Server Error"})
     }
