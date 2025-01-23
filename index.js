@@ -96,12 +96,12 @@ app.post("/tasks",async(req,res)=>{
 })
 app.get("/tasks",async(req,res)=>{
     try{
-    const { team, owner, tags, project, status } = req.query;
+    const { team, owners, tags, project, status } = req.query;
 
     let filter = {};
 
     if (team) filter.team = team;
-    if (owner) filter.owner = owner;
+    if (owners) filter.owners = owners;
     if (tags) filter.tags = { $in: tags.split(",") }; 
     if (project) filter.project = project;
     if (status) filter.status = status;
