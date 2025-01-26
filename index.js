@@ -173,13 +173,19 @@ app.get("/teams",async(req,res)=>{
 })
 app.post("/teams/:id",async(req, res)=>{
     const teamId = req.params.id
-    const updateData = req.body
+    const newMember = req.body.members
+    console.log(newMember)
     try{
-        const updatedData = await Team.findByIdAndUpdate(teamId, updateData, {new:true})
-        console.log(updatedData)
-        if(!updatedData){
-            return res.status(404).json({error:"Cannot be updated"})
+        const team = await Team.findById(teamId)
+        if(!team){
+            return res.status(404).json({error:"Team not found"})
         }
+        team.members.push(newMember)
+        const updatedData = await team.save()
+        if (!updatedData) {
+            return res.status(404).json({ error: "Cannot be updated" });
+        }
+        console.log(updatedData)
         res.status(202).json(updatedData)
     }
     catch(error){
