@@ -171,6 +171,21 @@ app.get("/teams",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
+app.post("/teams/:id",async(req, res)=>{
+    const teamId = req.params.id
+    const updateData = req.body
+    try{
+        const updatedData = await Team.findByIdAndUpdate(teamId, updateData, {new:true})
+        console.log(updatedData)
+        if(!updatedData){
+            return res.status(404).json({error:"Cannot be updated"})
+        }
+        res.status(202).json(updatedData)
+    }
+    catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
 app.post("/teams",async(req,res)=>{
     try{
         const team = new Team(req.body)
