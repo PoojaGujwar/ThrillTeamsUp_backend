@@ -97,17 +97,14 @@ app.post("/tasks",async(req,res)=>{
 app.get("/tasks",async(req,res)=>{
     try{
     const { team, owners, tags, project, status } = req.query;
-
     let filter = {};
-
     if (team) filter.team = team;
     if (owners) filter.owners = owners;
     if (tags) filter.tags = { $in: tags.split(",") }; 
     if (project) filter.project = project;
     if (status) filter.status = status;
 
-   
-    const tasks = await Tasks.find(filter);
+    const tasks = await Tasks.find(filter)
     if (!tasks.length) {
       return res.status(404).json({ error: "No tasks found with the given filters" });
     }
@@ -185,7 +182,6 @@ app.post("/teams/:id",async(req, res)=>{
         if (!updatedData) {
             return res.status(404).json({ error: "Cannot be updated" });
         }
-        console.log(updatedData)
         res.status(202).json(updatedData)
     }
     catch(error){
@@ -217,6 +213,28 @@ app.get("/projects",async(req,res)=>{
             return res.status(404).json({error:"Project not available"})
         }
         res.status(202).json(project)
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+app.get("/report/lastweek",async(req,res)=>{
+    console.log(req)
+    try{
+        const task = await Tasks.find({ status: 'Completed', updatedAt: { $gte: new Date(new Date() - 7 * 24 * 60 * 60 * 1000) } })
+        if(!task){
+            res.status(404).json({error:"Any task is not completed right now"})
+        }
+        res.status(202).json(task)
+    }catch(error){
+        res.status(500).json({error:"Internal Server Error"})
+    }
+})
+app.get("/report/pending",async(req,res)=>{
+    try{
+        const taskPending = await Tasks.reduce((acc,curr)=> acc+curr.
+        timeToComplete,0)
+        console.log(taskPending)
+        // res.status(202).json(taskPending)
     }catch(error){
         res.status(500).json({error:"Internal Server Error"})
     }
