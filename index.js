@@ -218,7 +218,6 @@ app.get("/projects",async(req,res)=>{
     }
 })
 app.get("/report/lastweek",async(req,res)=>{
-    console.log(req)
     try{
         const task = await Tasks.find({ status: 'Completed', updatedAt: { $gte: new Date(new Date() - 7 * 24 * 60 * 60 * 1000) } })
         if(!task){
@@ -231,10 +230,10 @@ app.get("/report/lastweek",async(req,res)=>{
 })
 app.get("/report/pending",async(req,res)=>{
     try{
-        const taskPending = await Tasks.reduce((acc,curr)=> acc+curr.
-        timeToComplete,0)
-        console.log(taskPending)
-        // res.status(202).json(taskPending)
+        const task = await Tasks.find()
+        const calculate = task.reduce((acc,curr)=> (curr.status === 'Completed')?(acc + curr.timeToComplete):acc, 0)
+        console.log(calculate)
+         res.status(202).json(calculate)
     }catch(error){
         res.status(500).json({error:"Internal Server Error"})
     }
