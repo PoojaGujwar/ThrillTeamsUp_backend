@@ -26,7 +26,7 @@ app.get("/",(req,res)=>{
     res.send("Hello")
 })
 
-app.post("/auth/login",authUser, async(req,res)=>{
+app.post("/auth/login", async(req,res)=>{
      const {email,password} = req.body
         try{
             const user = await User.findOne({email})
@@ -46,7 +46,7 @@ app.post("/auth/login",authUser, async(req,res)=>{
         }
    
 })
-app.post("/auth/signup",authUser,async(req,res)=>{
+app.post("/auth/signup",async(req,res)=>{
     const {name,email,password} = req.body
     try{
         const existingUser = await User.findOne({email})
