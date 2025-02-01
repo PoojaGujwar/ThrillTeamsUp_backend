@@ -13,15 +13,20 @@ const { authUser } = require('./middlewares/auth.middleware')
 
 const SECRET_KEY = "supersecretadmin"
 
+
+app.use(cors({
+    origin:"*",
+    methods:["GET","POST"],
+    allowedHeaders:["Content-Type","Authorization"]
+}))
 app.use(express.json())
-app.use(cors())
 initializeDatabase()
 
 app.get("/",(req,res)=>{
     res.send("Hello")
 })
 
-app.post("/auth/login", async(req,res)=>{
+app.post("/auth/login",authUser, async(req,res)=>{
      const {email,password} = req.body
         try{
             const user = await User.findOne({email})
@@ -41,7 +46,7 @@ app.post("/auth/login", async(req,res)=>{
         }
    
 })
-app.post("/auth/signup",async(req,res)=>{
+app.post("/auth/signup",authUser,async(req,res)=>{
     const {name,email,password} = req.body
     try{
         const existingUser = await User.findOne({email})
@@ -69,13 +74,14 @@ app.get("/auth/me",authUser,async(req,res)=>{
         if(!finded){
             res.status(404).json({error:"User not found"})
         }
+
         const {name, email} = finded
-        res.json({name,email})
+        res.status(200).json({name,email})
     }catch(error){
         res.status(500).json({message:"Internal server error",error})
     }
 })
-app.get("/users",async(req,res)=>{
+app.get("/users",authUser,async(req,res)=>{
     try{
         const user = await User.find()
         res.status(200).json(user)
@@ -83,7 +89,7 @@ app.get("/users",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/tasks",async(req,res)=>{
+app.post("/tasks" ,authUser,async(req,res)=>{
     console.log(req.body)
     try{
         const task = new Tasks(req.body)
@@ -94,7 +100,7 @@ app.post("/tasks",async(req,res)=>{
         res.status(500).json({message:"Internal server error"})
     }
 })
-app.get("/tasks",async(req,res)=>{
+app.get("/tasks" ,authUser,async(req,res)=>{
     try{
     const { team, owners, tags, project, status } = req.query;
     let filter = {};
@@ -114,7 +120,7 @@ app.get("/tasks",async(req,res)=>{
         }
     
 })
-app.post("/tasks/:id",async(req,res)=>{
+app.post("/tasks/:id",authUser,async(req,res)=>{
     const taskId = req.params.id
     const updateTask = req.body
     try{
@@ -128,7 +134,7 @@ app.post("/tasks/:id",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.delete("/tasks/:id",async(req,res)=>{
+app.delete("/tasks/:id",authUser,async(req,res)=>{
     const taskId = req.params.id
     try{
         const task = await Tasks.findByIdAndDelete(taskId)
@@ -142,7 +148,7 @@ app.delete("/tasks/:id",async(req,res)=>{
     }
 })
 
-app.get("/tags",async(req,res)=>{
+app.get("/tags",authUser,async(req,res)=>{
     try{
         const tag = await Tag.find()
         res.status(202).json(tag)
@@ -150,7 +156,7 @@ app.get("/tags",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/tags",async(req,res)=>{
+app.post("/tags",authUser,async(req,res)=>{
     const {name } = req.body
     try{
         const tag= new Tag({name})
@@ -160,7 +166,7 @@ app.post("/tags",async(req,res)=>{
         res.status(500).json({message:"Internal server error"})
     }
 })
-app.get("/teams",async(req,res)=>{
+app.get("/teams",authUser,async(req,res)=>{
     try{
         const team = await Team.find()
         res.status(202).json(team)
@@ -168,7 +174,7 @@ app.get("/teams",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/teams/:id",async(req, res)=>{
+app.post("/teams/:id",authUser,async(req, res)=>{
     const teamId = req.params.id
     const newMember = req.body.members
     console.log(newMember)
@@ -188,7 +194,7 @@ app.post("/teams/:id",async(req, res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/teams",async(req,res)=>{
+app.post("/teams",authUser,async(req,res)=>{
     try{
         const team = new Team(req.body)
         await team.save()
@@ -197,7 +203,7 @@ app.post("/teams",async(req,res)=>{
         res.status(500).json({message:"Internal server error"})
     }
 })
-app.post("/projects",async(req,res)=>{
+app.post("/projects",authUser,async(req,res)=>{
     try{
         const project = new Project(req.body)
         await project.save()
@@ -206,7 +212,7 @@ app.post("/projects",async(req,res)=>{
         res.status(500).json({message:"Internal Server Error"})
     }
 })
-app.get("/projects",async(req,res)=>{
+app.get("/projects",authUser,async(req,res)=>{
     try{
         const project = await Project.find()
         if(!project){
@@ -217,18 +223,19 @@ app.get("/projects",async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.get("/report/lastweek",async(req,res)=>{
+app.get("/report/lastweek",authUser,async(req,res)=>{
     try{
         const task = await Tasks.find({ status: 'Completed', updatedAt: { $gte: new Date(new Date() - 7 * 24 * 60 * 60 * 1000) } })
         if(!task){
             res.status(404).json({error:"Any task is not completed right now"})
         }
-        res.status(202).json(task)
+        res.status(202).json({
+            message: "Tasks completed in the last week.",task})
     }catch(error){
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.get("/report/pending",async(req,res)=>{
+app.get("/report/pending",authUser,async(req,res)=>{
     try{
         const task = await Tasks.find()
         const calculate = task.reduce((acc,curr)=> (curr.status === 'Completed')?(acc + curr.timeToComplete):acc, 0)
