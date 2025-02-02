@@ -89,7 +89,7 @@ app.get("/users",authUser,async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/tasks" ,authUser,async(req,res)=>{
+app.post("/tasks" ,async(req,res)=>{
     console.log(req.body)
     try{
         const task = new Tasks(req.body)
@@ -120,7 +120,7 @@ app.get("/tasks" ,authUser,async(req,res)=>{
         }
     
 })
-app.post("/tasks/:id",authUser,async(req,res)=>{
+app.post("/tasks/:id",async(req,res)=>{
     const taskId = req.params.id
     const updateTask = req.body
     try{
@@ -134,7 +134,7 @@ app.post("/tasks/:id",authUser,async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.delete("/tasks/:id",authUser,async(req,res)=>{
+app.delete("/tasks/:id",async(req,res)=>{
     const taskId = req.params.id
     try{
         const task = await Tasks.findByIdAndDelete(taskId)
@@ -156,7 +156,7 @@ app.get("/tags",authUser,async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/tags",authUser,async(req,res)=>{
+app.post("/tags",async(req,res)=>{
     const {name } = req.body
     try{
         const tag= new Tag({name})
@@ -174,7 +174,7 @@ app.get("/teams",authUser,async(req,res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/teams/:id",authUser,async(req, res)=>{
+app.post("/teams/:id",async(req, res)=>{
     const teamId = req.params.id
     const newMember = req.body.members
     console.log(newMember)
@@ -194,7 +194,7 @@ app.post("/teams/:id",authUser,async(req, res)=>{
         res.status(500).json({error:"Internal Server Error"})
     }
 })
-app.post("/teams",authUser,async(req,res)=>{
+app.post("/teams",async(req,res)=>{
     try{
         const team = new Team(req.body)
         await team.save()
@@ -203,7 +203,7 @@ app.post("/teams",authUser,async(req,res)=>{
         res.status(500).json({message:"Internal server error"})
     }
 })
-app.post("/projects",authUser,async(req,res)=>{
+app.post("/projects",async(req,res)=>{
     try{
         const project = new Project(req.body)
         await project.save()
