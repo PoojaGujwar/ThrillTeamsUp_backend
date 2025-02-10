@@ -238,7 +238,7 @@ app.get("/report/lastweek",authUser,async(req,res)=>{
 app.get("/report/pending",authUser,async(req,res)=>{
     try{
         const task = await Tasks.find()
-        const calculate = task.reduce((acc,curr)=> (curr.status === 'Completed')?(acc + curr.timeToComplete):acc, 0)
+        const calculate = task.reduce((acc,curr)=> (curr.status !== 'Completed')?(acc + curr.timeToComplete):acc, 0)
         console.log(calculate)
          res.status(202).json(calculate)
     }catch(error){
